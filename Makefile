@@ -60,17 +60,20 @@ LD_SYS_LIBS = -lstdc++ -lsupc++ -lm -lc -lgcc -lnosys
 
 
 ifeq ($(DEBUG), 1)
-  CC_FLAGS += -DDEBUG -O0
+  # There is only memory for cpp debug xor c debug
+  #CC_FLAGS += -DDEBUG -O0 -g
+  CPPC_FLAGS += -DDEBUG -O0 -g
 else
   CC_FLAGS += -DNDEBUG -Os
 endif
 
 
-.PHONY: all lst size
+.PHONY: all lst size flash
 
 all: $(PROJECT).bin $(PROJECT).hex size
 
-
+flash: $(PROJECT).bin
+	st-flash write $(PROJECT).bin 0x8000000
 
 .asm.o:
 	+@$(call MAKEDIR,$(dir $@))
