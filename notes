@@ -1,0 +1,39 @@
+The mbed-cli has some issues with default_build and default_lib
+	They mean the same thing
+	Hacked to work with hasattr
+
+https://developer.mbed.org/users/c1728p9/notebook/debugging-with-eclipse-and-pyocd/
+https://electronics.stackexchange.com/questions/188939/exporting-mbed-code-to-build-with-in-eclipse
+
+eclipse is hard, I'm using openocd and gdb directly
+
+make DEBUG=1 produces a bin that is different from regular make
+	DEBUG=1 allegedly does something with optimizations that make it easier to debug
+	add -g to CC_FLAGS when debugging
+	Mbed uses both c and cpp compilers. Each compiler needs to have debug flags added, but not both as the debug symbols take up too much space
+
+st-flash write Unnamed_Project.bin 0x8000000
+
+openocd -f /usr/share/openocd/scripts/board/st_nucleo_f0.cfg
+arm-none-eabi-gdb Unnamed_Project.elf
+target remote :3333
+info functions
+
+stty -F /dev/ttyACM0 2000000
+sudo slcan_attach -f -s8 -o /dev/ttyACM0
+sudo slcand ttyACM0 slcan0
+sudo ip link set slcan0 up
+
+The previous lines don't work, the following lines do
+sudo slcand -o -c -s8 /dev/ttyACM1 slcan0
+sudo ip link set slcan0 up
+
+cansend slcan0 123#1122334455667788
+candump slcan0
+
+the problem is with serial receive
+readable() keeps returning 0
+serial receive has issues running echoing program when above at least 1000000
+max baudrate is 460800 before bytes start getting lost
+
+https://hackaday.com/2012/09/27/beginners-look-at-on-chip-debugging/
